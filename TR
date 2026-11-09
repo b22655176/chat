@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>東京秋日浪漫之旅 | Tokyo Itinerary</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fdf4f4',
+                            100: '#fbe6e6',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Hide scrollbar for tab menu but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased font-sans">
+
+    <!-- App Container -->
+    <div class="max-w-lg mx-auto bg-white min-h-screen shadow-2xl overflow-hidden relative flex flex-col">
+        
+        <!-- Header -->
+        <header class="bg-white px-5 pt-12 pb-4 shadow-sm z-20 relative">
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">東京秋日浪漫之旅 🍁</h1>
+            <p class="text-slate-500 text-sm font-medium mt-1">2026.11.13 - 11.17</p>
+        </header>
+
+        <!-- Tab Navigation (Sticky) -->
+        <nav class="bg-white border-b border-slate-100 z-10 sticky top-0 shadow-sm">
+            <ul id="tabs" class="flex overflow-x-auto no-scrollbar px-3 py-2 space-x-2">
+                <!-- Tabs will be rendered here by JS -->
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 bg-slate-50 overflow-y-auto px-5 py-6">
+            <div id="day-title" class="mb-6 fade-in">
+                <h2 class="text-xl font-bold text-slate-800">Day X</h2>
+                <p class="text-sm text-slate-500 mt-1">主題說明</p>
+            </div>
+            
+            <!-- Timeline Container -->
+            <div id="timeline" class="relative border-l-2 border-slate-200 ml-3 md:ml-4 pb-10">
+                <!-- Timeline items will be rendered here by JS -->
+            </div>
+            
+            <!-- Local Note Section -->
+            <div class="mt-4 mb-8 fade-in">
+                <label class="block text-sm font-bold text-slate-700 mb-2">旅行備忘錄 (自動儲存)</label>
+                <textarea id="daily-note" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all shadow-sm" rows="3" placeholder="在這裡寫下今天的筆記或花費..."></textarea>
+            </div>
+        </main>
+
+        <!-- 新增行程按鈕 (FAB) -->
+        <button onclick="openAddModal()" class="absolute bottom-6 right-6 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all z-30">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+        </button>
+
+        <!-- 新增行程彈出視窗 (Modal) -->
+        <div id="addModal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0 duration-300">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="addModalContent">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="text-lg font-black text-slate-800">新增行程</h3>
+                    <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <form id="addEventForm" onsubmit="submitNewEvent(event)">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">預計時間</label>
+                            <input type="time" id="newTime" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-shadow">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">行程標題 / 地點</label>
+                            <input type="text" id="newTitle" required placeholder="例如：晴空塔" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-shadow">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">分類標籤</label>
+                            <select id="newTag" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-shadow">
+                                <option value="景點">景點</option>
+                                <option value="美食">美食</option>
+                                <option value="逛街">逛街</option>
+                                <option value="交通">交通</option>
+                                <option value="夜景">夜景</option>
+                                <option value="自然">自然</option>
+                                <option value="活動">活動</option>
+                                <option value="寶可夢">寶可夢</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">備註說明</label>
+                            <textarea id="newDesc" rows="2" placeholder="細節或注意事項..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-shadow"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-brand-500 text-white font-bold rounded-lg p-3 mt-4 shadow-md hover:bg-brand-600 hover:shadow-lg active:scale-[0.98] transition-all">儲存行程</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Data and Logic -->
+    <script>
+        // Tag Color Configuration
+        const tagColors = {
+            '交通': 'bg-blue-100 text-blue-700',
+            '景點': 'bg-teal-100 text-teal-700',
+            '自然': 'bg-green-100 text-green-700',
+            '美食': 'bg-orange-100 text-orange-700',
+            '逛街': 'bg-pink-100 text-pink-700',
+            '夜景': 'bg-indigo-100 text-indigo-700',
+            '活動': 'bg-purple-100 text-purple-700',
+            '寶可夢': 'bg-yellow-100 text-yellow-800',
+            '其他': 'bg-slate-100 text-slate-700'
+        };
+
+        // 預設行程骨架資料 (Default Itinerary Data)
+        const defaultItineraryData = [
+            {
+                id: 'day4',
+                day: 4,
+                date: '11/13 (五)',
+                title: '秋日散步、逛街、夜間約會',
+                events: [
+                    { time: '08:00', title: '明治神宮', tags: ['景點'], desc: '大鳥居、南參道森林步道、酒樽、御社殿。' },
+                    { time: '12:00', title: '竹下通 + 表參道 + 午餐', tags: ['美食', '逛街'], desc: '看看特色建築、精品店，找間咖啡廳休息。' },
+                    { time: '13:30', title: '神宮外苑銀杏大道', tags: ['景點', '自然'], desc: '滿開的大地色銀杏葉，宛如一條金黃色的隧道。' },
+                    { time: '16:00', title: '前往東京車站', tags: ['交通'], desc: '千代田線明治神宮前到二重橋前，或搭山手線。' },
+                    { time: '18:15', title: '丸之內仲通聖誕燈飾 & 寶可夢中心', tags: ['夜景', '逛街', '寶可夢'], desc: '哈利波特魔法雪景燈飾，日本橋高島屋東館5F寶可夢中心。' }
+                ]
+            },
+            {
+                id: 'day5',
+                day: 5,
+                date: '11/14 (六)',
+                title: '新宿購物與澀谷約會',
+                events: [
+                    { time: '09:00', title: '新宿 Lumine 百貨逛街', tags: ['逛街'], desc: '新宿商圈購物，逛百貨、藥妝店及伴手禮店。' },
+                    { time: '14:00', title: '澀谷商圈 + 寶可夢中心', tags: ['逛街', '寶可夢'], desc: 'Scramble Crossing 十字路口、忠犬八公像、澀谷 PARCO。' },
+                    { time: '18:00', title: '惠比壽花園廣場聖誕點燈', tags: ['夜景', '活動'], desc: '浪漫的聖誕點燈與夜景約會。' }
+                ]
+            },
+            {
+                id: 'day6',
+                day: 6,
+                date: '11/15 (日)',
+                title: '庭園賞楓與六本木夜景',
+                events: [
+                    { time: '08:30', title: '鶯谷搭 JR 前往駒込', tags: ['交通'], desc: '搭乘山手線前往駒込站。' },
+                    { time: '09:00', title: '六義園賞楓', tags: ['景點', '自然'], desc: '日式庭園、池畔散步、秋景拍照（如楓葉不紅改去舊古河庭園）。' },
+                    { time: '10:30', title: '吹上茶屋', tags: ['美食'], desc: '傳統茶屋喝抹茶、吃日式和菓子。' },
+                    { time: '11:00', title: '駒込午餐', tags: ['美食'], desc: '推薦 Orient Cafe 或 SAKURA Kitchen Cafe。' },
+                    { time: '11:45', title: '前往日比谷公園', tags: ['交通'], desc: '搭乘山手線至有樂町站。' },
+                    { time: '12:30', title: '日比谷公園', tags: ['景點', '自然'], desc: '鶴之噴水池、雲形池與首掛銀杏。' },
+                    { time: '13:30', title: '前往六本木', tags: ['交通'], desc: '搭乘日比谷線至六本木站。' },
+                    { time: '14:00', title: '六本木之丘', tags: ['逛街'], desc: '商場購物與 WEST WALK 聖誕裝飾。' },
+                    { time: '15:30', title: 'Tokyo City View 夕陽', tags: ['景點', '夜景'], desc: '欣賞高空夕陽與城市夜景（16:35 左右日落）。' },
+                    { time: '17:15', title: '六本木聖誕燈飾', tags: ['夜景', '活動'], desc: '櫸坂通 SNOW & BLUE 白藍色燈海，毛利庭園點燈。' },
+                    { time: '18:30', title: '六本木晚餐', tags: ['美食'], desc: '推薦 Afuri 柚子風味拉麵或商場內日式料理。' },
+                    { time: '19:15', title: '前往芝公園', tags: ['交通'], desc: '搭乘都營大江戶線至赤羽橋站。' },
+                    { time: '19:40', title: '芝公園', tags: ['景點', '夜景'], desc: '利用樹木當前景，拍出東京鐵塔的夜景氛圍。' },
+                    { time: '20:15', title: '增上寺 + 東京鐵塔', tags: ['景點', '夜景'], desc: '增上寺古老寺院建築搭配後方明亮的東京鐵塔。' },
+                    { time: '21:30', title: '返回住宿', tags: ['交通'], desc: '步行至濱松町站，搭乘山手線回鶯谷。' }
+                ]
+            },
+            {
+                id: 'day7',
+                day: 7,
+                date: '11/16 (一)',
+                title: '淺草懷舊散步 × 秋葉原 × 晴空塔',
+                events: [
+                    { time: '08:30', title: '前往淺草', tags: ['交通'], desc: '鶯谷搭 JR 轉銀座線至淺草。' },
+                    { time: '09:00', title: '淺草寺、雷門、仲見世', tags: ['景點'], desc: '經典紅色大燈籠，商店街邊走邊吃，本堂參拜求籤。' },
+                    { time: '11:30', title: '淺草午餐', tags: ['美食'], desc: '推薦天丼 (炸蝦天婦羅)、鰻魚飯或清爽蕎麥麵。' },
+                    { time: '12:15', title: '前往上野', tags: ['交通'], desc: '搭乘銀座線往澀谷方向至上野。' },
+                    { time: '12:35', title: '上野公園 + 上野東照宮', tags: ['景點', '自然'], desc: '欣賞中央大道銀杏、不忍池景觀與金色裝飾的東照宮。' },
+                    { time: '13:30', title: '前往秋葉原', tags: ['交通'], desc: '搭乘 JR 山手線或京濱東北線。' },
+                    { time: '13:45', title: '秋葉原 Yodobashi', tags: ['逛街'], desc: '大型綜合電器賣場採購，相機、家電、配件集中好逛。' },
+                    { time: '15:30', title: '前往晴空塔', tags: ['交通'], desc: '搭乘 JR 轉都營淺草線前往押上站。' },
+                    { time: '16:00', title: '晴空塔展望台', tags: ['景點', '夜景'], desc: '欣賞高空夕陽美景。' },
+                    { time: '17:45', title: '晴空塔聖誕市集', tags: ['逛街', '活動'], desc: '位於 4 樓 Sky Arena，享受美食與聖誕氣氛。' },
+                    { time: '19:15', title: '隅田公園 + 牛嶋神社竹燈', tags: ['景點', '夜景'], desc: '東京下町回遊竹燈活動，沿著北十間川與隅田川 River Walk 散步。' },
+                    { time: '20:30', title: '返回鶯谷', tags: ['交通'], desc: '從淺草站搭乘銀座線轉 JR 返回住宿。' }
+                ]
+            },
+            {
+                id: 'day8',
+                day: 8,
+                date: '11/17 (二)',
+                title: '滿載而歸 回到台灣',
+                events: [
+                    { time: '08:30', title: '起床與退房', tags: ['其他'], desc: '整理行李，辦理退房手續。' },
+                    { time: '09:00', title: '前往成田機場', tags: ['交通'], desc: '從鶯谷出發，搭乘 Skyliner (日暮里) 或 JR 線前往機場。' },
+                    { time: '14:00', title: '班機起飛', tags: ['交通'], desc: '搭機返回台灣，結束美好的東京秋日之旅！' }
+                ]
+            }
+        ];
+
+        // 載入 LocalStorage 資料，若無則使用預設資料
+        let itineraryData = [];
+        try {
+            const savedData = localStorage.getItem('tokyo_itinerary_data_v3');
+            if (savedData) {
+                itineraryData = JSON.parse(savedData);
+            } else {
+                itineraryData = JSON.parse(JSON.stringify(defaultItineraryData));
+            }
+        } catch (e) {
+            itineraryData = JSON.parse(JSON.stringify(defaultItineraryData));
+        }
+
+        // 儲存資料至 LocalStorage 的共用函式
+        function saveItineraryData() {
+            localStorage.setItem('tokyo_itinerary_data_v3', JSON.stringify(itineraryData));
+        }
+
+        let activeDayId = 'day4';
+
+        // DOM Elements
+        const tabsContainer = document.getElementById('tabs');
+        const timelineContainer = document.getElementById('timeline');
+        const dayTitleContainer = document.getElementById('day-title');
+        const noteArea = document.getElementById('daily-note');
+
+        // Render Tabs
+        function renderTabs() {
+            tabsContainer.innerHTML = '';
+            itineraryData.forEach(day => {
+                const isActive = day.id === activeDayId;
+                const tab = document.createElement('button');
+                tab.className = `whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all ${isActive ? 'bg-brand-500 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`;
+                tab.textContent = `Day ${day.day} (${day.date.split(' ')[0]})`;
+                tab.onclick = () => switchDay(day.id);
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        // Render Timeline
+        function renderTimeline() {
+            const dayData = itineraryData.find(d => d.id === activeDayId);
+            if (!dayData) return;
+
+            // Update Title
+            dayTitleContainer.innerHTML = `
+                <h2 class="text-2xl font-black text-slate-800">Day ${dayData.day} <span class="text-lg font-medium text-slate-500 ml-2">${dayData.date}</span></h2>
+                <p class="text-sm text-brand-600 font-bold mt-1">${dayData.title}</p>
+            `;
+            
+            // Re-trigger animation
+            dayTitleContainer.classList.remove('fade-in');
+            void dayTitleContainer.offsetWidth; // trigger reflow
+            dayTitleContainer.classList.add('fade-in');
+
+            // Render Events
+            timelineContainer.innerHTML = '';
+            dayData.events.forEach((evt, index) => {
+                const item = document.createElement('div');
+                item.className = 'mb-8 ml-6 fade-in';
+                item.style.animationDelay = `${index * 0.05}s`;
+
+                // Tags HTML
+                const tagsHtml = evt.tags.map(tag => {
+                    const colorClass = tagColors[tag] || tagColors['其他'];
+                    return `<span class="px-2.5 py-1 text-[11px] font-bold rounded-md ${colorClass}">${tag}</span>`;
+                }).join('');
+
+                item.innerHTML = `
+                    <div class="absolute w-3.5 h-3.5 bg-brand-500 rounded-full -left-[8px] top-1 border-2 border-white shadow-sm"></div>
+                    <div class="flex items-center text-brand-600 font-black tracking-wide mb-1.5">${evt.time}</div>
+                    <div class="bg-white p-4 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 relative group transition-all">
+                        <!-- 刪除按鈕 -->
+                        <button onclick="deleteEvent('${dayData.id}', ${index})" class="absolute top-3 right-3 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="刪除行程">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                        </button>
+                        <h3 class="font-bold text-lg text-slate-800 leading-tight pr-6">${evt.title}</h3>
+                        <div class="mt-2.5 flex flex-wrap gap-1.5">
+                            ${tagsHtml}
+                        </div>
+                        <p class="mt-3 text-sm text-slate-600 leading-relaxed">${evt.desc}</p>
+                    </div>
+                `;
+                timelineContainer.appendChild(item);
+            });
+
+            // Load Note
+            loadNote();
+        }
+
+        // Switch Day
+        function switchDay(id) {
+            activeDayId = id;
+            renderTabs();
+            renderTimeline();
+            // Scroll to top of timeline
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Local Storage for Notes
+        function saveNote() {
+            localStorage.setItem(`tokyo_note_${activeDayId}`, noteArea.value);
+        }
+
+        function loadNote() {
+            const savedNote = localStorage.getItem(`tokyo_note_${activeDayId}`);
+            noteArea.value = savedNote || '';
+        }
+
+        // Event Listener for Note Auto-save
+        noteArea.addEventListener('input', saveNote);
+
+        // --- 新增與刪除功能邏輯 ---
+
+        // 刪除行程
+        function deleteEvent(dayId, eventIndex) {
+            if(confirm('確定要刪除這個行程嗎？')) {
+                const dayData = itineraryData.find(d => d.id === dayId);
+                if (dayData) {
+                    dayData.events.splice(eventIndex, 1);
+                    saveItineraryData(); // 儲存變更
+                    renderTimeline();    // 重新渲染畫面
+                }
+            }
+        }
+
+        // 開關 Modal 的邏輯
+        const addModal = document.getElementById('addModal');
+        const addModalContent = document.getElementById('addModalContent');
+
+        function openAddModal() {
+            addModal.classList.remove('hidden');
+            setTimeout(() => {
+                addModal.classList.remove('opacity-0');
+                addModalContent.classList.remove('scale-95');
+            }, 10);
+            
+            // 初始化表單
+            document.getElementById('newTime').value = '10:00';
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newDesc').value = '';
+        }
+
+        function closeAddModal() {
+            addModal.classList.add('opacity-0');
+            addModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                addModal.classList.add('hidden');
+            }, 300); // 配合 CSS transition 延遲隱藏
+        }
+
+        // 提交新行程
+        function submitNewEvent(e) {
+            e.preventDefault();
+            
+            const time = document.getElementById('newTime').value;
+            const title = document.getElementById('newTitle').value;
+            const tag = document.getElementById('newTag').value;
+            const desc = document.getElementById('newDesc').value;
+
+            const dayData = itineraryData.find(d => d.id === activeDayId);
+            if (dayData) {
+                // 將新資料推入陣列
+                dayData.events.push({
+                    time: time,
+                    title: title,
+                    tags: [tag],
+                    desc: desc
+                });
+                
+                // 根據時間重新排序，確保時間軸整齊
+                dayData.events.sort((a, b) => a.time.localeCompare(b.time));
+                
+                saveItineraryData(); // 持久化儲存
+                renderTimeline();    // 更新畫面
+                closeAddModal();     // 關閉表單
+            }
+        }
+
+        // Initialization
+        renderTabs();
+        renderTimeline();
+
+    </script>
+</body>
+</html>
